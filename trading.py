@@ -6,17 +6,7 @@ import pandas as pd
 import talib
 import random
 
-start = datetime.datetime(2010, 1, 1)
-end = datetime.datetime(2013, 01, 27)
-
-#Import Apple stock
-#sp500 = DataReader("^GSPC", "yahoo", start, end)
-stock = DataReader("AAPL", "yahoo", start, end)
-close = stock['Adj Close']
-
-#Close all plots, and plot the current stock prices
-close.plot()
-plt.show()
+print("Starting...")
 
 #MACD: Moving Average Convergence/Divergence
 def MACD(close):
@@ -27,54 +17,76 @@ def MACD(close):
 
     return ta_macd
 
+start = datetime.datetime(2010, 1, 1)
+end = datetime.datetime(2013, 01, 27)
+
+#Import Apple stock
+#sp500 = DataReader("^GSPC", "yahoo", start, end)
+stock = DataReader("AAPL", "yahoo", start, end)
+close = stock['Adj Close']
+
+#Close all plots, and plot the current stock prices
+#close.plot()
+#plt.show()
+#close.plot()
 
 #PSEUDO-CODE
-#
 time_min = 5
 time_max = 255
-num_starts = 10
+num_starts = 100
 rand_starts = random.sample(xrange(time_min, time_max), num_starts)
-period_step = 10
-
+period_step = 5
 
 MACD_value_array = []
 hold_value_array = []
+MACD_means = []
+MACD_stdev = []
+hold_means = []
+hold_stdev = []
+
+print("Starting for loop...")
 
 for time_period in range(time_min, time_max, period_step):
     for start_time in rand_starts:
-      end_time = start_time + time_period
-      hold_value = ( close[end_time] - close[start_time] ) / close[start_time]
-      buy_price = 0
-      sell_price = 0
-      MACD_value = 0
-      own_stock = False
+        end_time = start_time + time_period
+        hold_value = 1 + ( close[end_time] - close[start_time] ) / close[start_time]
+        buy_price = 0
+        sell_price = 0
+        MACD_value = 1
+        own_stock = False
+        macd = MACD(close)
 
-	    #Use MACD method over time-period, long only method
-      macd = MACD(close)
-      for t in range(start_time, end_time):
-        if macd[t] > 0 and macd[t-1] < 0: #Crosses 0 on way up:
-          buy_price = close[t]
-          own_stock = True
-        elif macd[t] < 0 and  macd[t-1] > 0 and own_stock == True:
-          sell_price = close[t]
-          own_stock = False
-          MACD_value = macd[t]*(1 + (sell_price - buy_price)/buy_price)
+        for t in range(start_time, end_time):
+            if macd[t] > 0 and macd[t-1] < 0: #Crosses 0 on way up:
+                buy_price = close[t]
+                own_stock = True
+            elif macd[t] < 0 and  macd[t-1] > 0 and own_stock == True:
+                sell_price = close[t]
+                own_stock = False
+                MACD_value = MACD_value*(1 + (sell_price - buy_price)/buy_price)
 
-# 	#Store MACD_value and hold_value in array (dynamic allocaton)
+        #Store MACD_value and hold_value in array (dynamic allocaton)
     	MACD_value_array.append(MACD_value)
-    	hold_value_array.append(hold_value)
+        hold_value_array.append(hold_value)
 
-#Compute mean and std.dev. of the arrays
-      MACD_means = []
-      MACD_stdev = []
-      hold_means = []
-      hold_stdev = []
-      MACD_means.append(np.mean(MACD_value_array))
-      MACD_stdev.append(np.std(MACD_value_array))
-      hold_means.append(np.mean(hold_value_array))
-      hold_stdev.append(np.std(hold_value_array))
+    #Compute mean and std.dev. of the arrays
+    MACD_means.append(np.mean(MACD_value_array))
+    MACD_stdev.append(np.std(MACD_value_array))
+    hold_means.append(np.mean(hold_value_array))
+    hold_stdev.append(np.std(hold_value_array))
 
-#We now have MACD returns vs holdings as a function of time_period
+#Plotting
+print("Plotting...")
+plt.close("all")
+plt.clf()
+steps = np.arange(time_min, time_max, period_step)
+plt.plot(steps, MACD_means, 'rs',steps, hold_means, 'g^')
+plt.show()
+
+
+print("Done.")
+
+
 #Possible extensions of this code
 #1) Record how much time MACD is holding money for.
 #   Probably ~40%, which means it it missing out on some gains

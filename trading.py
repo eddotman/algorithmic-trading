@@ -33,9 +33,9 @@ close = stock['Adj Close']
 #PSEUDO-CODE
 time_min = 5
 time_max = 255
-num_starts = 100
-rand_starts = random.sample(xrange(time_min, time_max), num_starts)
 period_step = 5
+num_starts = 100
+rand_starts = random.sample(xrange(0, len(close) ), num_starts)
 
 MACD_value_array = []
 hold_value_array = []
@@ -50,9 +50,9 @@ for time_period in range(time_min, time_max, period_step):
     for start_time in rand_starts:
         end_time = start_time + time_period
         hold_value = 1 + ( close[end_time] - close[start_time] ) / close[start_time]
+        MACD_value = 1
         buy_price = 0
         sell_price = 0
-        MACD_value = 1
         own_stock = False
         macd = MACD(close)
 

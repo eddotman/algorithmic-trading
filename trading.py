@@ -17,25 +17,23 @@ def MACD(close):
 
     return ta_macd
 
-start = datetime.datetime(2010, 1, 1)
-end = datetime.datetime(2013, 01, 27)
+start = datetime.datetime(2009, 1, 1)
+end = datetime.datetime(2014, 8, 12)
 
-#Import Apple stock
-#sp500 = DataReader("^GSPC", "yahoo", start, end)
+#Import stock
 stock = DataReader("AAPL", "yahoo", start, end)
 close = stock['Adj Close']
 
-#Close all plots, and plot the current stock prices
+#Plot the stock
 #close.plot()
-#plt.show()
+##plt.show()
 #close.plot()
 
-#PSEUDO-CODE
 time_min = 5
 time_max = 255
 period_step = 5
 num_starts = 100
-rand_starts = random.sample(xrange(0, len(close) ), num_starts)
+rand_starts = random.sample(xrange(0, len(close) - time_max), num_starts)
 
 MACD_value_array = []
 hold_value_array = []
@@ -79,10 +77,15 @@ for time_period in range(time_min, time_max, period_step):
 print("Plotting...")
 plt.close("all")
 plt.clf()
+#plt.figure()
 steps = np.arange(time_min, time_max, period_step)
-plt.plot(steps, MACD_means, 'rs',steps, hold_means, 'g^')
+p_macd = plt.errorbar(steps, MACD_means, yerr = MACD_stdev)
+p_hold = plt.errorbar(steps, hold_means, yerr = hold_stdev)
+plt.legend([p_macd, p_hold], ["MACD", "Hold"])
+plt.title("Mean return vs. length of investment")
+plt.xlabel('Length of Investment')
+plt.ylabel('Mean return')
 plt.show()
-
 
 print("Done.")
 
